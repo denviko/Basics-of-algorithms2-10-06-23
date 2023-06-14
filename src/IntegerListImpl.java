@@ -1,7 +1,7 @@
 import java.util.Arrays;
 
 public class IntegerListImpl implements IntegerList {
-    private final Integer[] values;
+    private Integer[] values;
     private int count = 0;
 
     public IntegerListImpl(int size) {
@@ -11,12 +11,8 @@ public class IntegerListImpl implements IntegerList {
 
     @Override
     public Integer add(Integer item) {
-        if (item == null) {
-            throw new NullPointerException();
-        }
-        if (count == values.length) {
-            throw new ArrayStoreException("List is full");
-        }
+        if (item == null) throw new NullPointerException();
+        if (count == values.length) grow();
         values[count++] = item;
         return item;
     }
@@ -32,7 +28,7 @@ public class IntegerListImpl implements IntegerList {
 
     @Override
     public Integer set(int index, Integer item) {
-        return add(index,item);
+        return add(index, item);
     }
 
     @Override
@@ -48,11 +44,11 @@ public class IntegerListImpl implements IntegerList {
     public Integer remove(int index) {
         checkIndex(index);
         int removed = values[index];
-        if (index == count -1) {
+        if (index == count - 1) {
             count--;
             return removed;
         }
-        for (int i = index; i < count -1; i++) {
+        for (int i = index; i < count - 1; i++) {
             values[index] = values[index + 1];
         }
         count--;
@@ -61,13 +57,9 @@ public class IntegerListImpl implements IntegerList {
 
     @Override
     public boolean contains(Integer item) {
-        for (int i = 0; i < count; i++) {
-            if (values[i].equals(item)) {
-                return true;
-            }
+        quickSort(0, count - 1);
+        return binarySearch(item);
 
-        }
-        return false;
     }
 
     @Override
@@ -109,11 +101,10 @@ public class IntegerListImpl implements IntegerList {
         if (other == null || other.size() != size()) return false;
         for (int i = 0; i < count; i++) {
             if (get(i).equals(other.get(i))) return false;
-            }
+        }
         return true;
 
     }
-
 
 
     @Override
@@ -139,6 +130,79 @@ public class IntegerListImpl implements IntegerList {
 
     @Override
     public Integer[] toArray() {
-        return Arrays.copyOf(values,count);
+        return Arrays.copyOf(values, count);
     }
+
+    private void grow() {
+        int newLength = (int) (values.length * 1.5);
+        Integer[] newValues = new Integer[newLength];
+        System.arraycopy(values, 0, newValues, 0, values.length);
+        System.out.println("Размер увеличен с " + values.length + " до " + newLength);
+        values = newValues;
+
+
+    }
+
+    public void sortInsertion() {
+        for (int i = 1; i < values.length; i++) {
+            int temp = values[i];
+            int j = i;
+            while (j > 0 && values[j - 1] >= temp) {
+                values[j] = values[j - 1];
+                j--;
+
+            }
+            values[j] = temp;
+
+        }
+    }
+
+    public boolean binarySearch(int element) {
+        int min = 0;
+        int max = values.length - 1;
+
+        while (min <= max) {
+            int mid = (min + max) / 2;
+            if (element == values[mid]) {
+                return true;
+            }
+            if (element < values[mid]) {
+                max = mid - 1;
+            } else {
+                min = mid + 1;
+            }
+        }
+        return false;
+
+    }
+
+    public void quickSort(int begin, int end) {
+        if (begin < end) {
+            int partitionIndex = partition(begin, end);
+
+            quickSort(begin, partitionIndex - 1);
+            quickSort(partitionIndex + 1, end);
+        }
+    }
+
+    private int partition(int begin, int end) {
+        int pivot = values[end];
+        int i = (begin - 1);
+
+        for (int j = begin; j < end; j++) {
+            if (values[j] <= pivot) {
+                i++;
+
+                swapElements(i, j);
+            }
+        }
+        swapElements( i +1, end);
+        return i + 1;
+    }
+    private void swapElements(int left, int right) {
+        int temp = values[left];
+        values[left] = values[right];
+        values[right] = temp;
+    }
+
 }
